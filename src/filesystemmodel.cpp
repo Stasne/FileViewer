@@ -1,5 +1,16 @@
-#include "filesystemmodel.h"
+#include "FileSystemModel.h"
 
+#include <QFont>
+namespace {
+
+const static QMap<int, QString> Headers {
+    { FileSystemModel::Column::NAME, QObject::tr("Name") },
+    { FileSystemModel::Column::SIZE, QObject::tr("Size") },
+    { FileSystemModel::Column::TYPE, QObject::tr("Type") }
+};
+const static QString DirectorySizePlaceholder { QObject::tr("<DIR>") };
+
+}
 FileSystemModel::FileSystemModel(QObject* parent)
     : QFileSystemModel(parent)
 {
@@ -8,10 +19,31 @@ FileSystemModel::FileSystemModel(QObject* parent)
 
 int FileSystemModel::columnCount(const QModelIndex& parent) const
 {
-    return 3; // QFileSystemModel::columnCount(parent);
+    return Headers.size();
 }
 
 QVariant FileSystemModel::data(const QModelIndex& index, int role) const
 {
+    if (role == Qt::DisplayRole and index.column() == SIZE)
+        return size(index);
     return QFileSystemModel::data(index, role);
+}
+
+QString FileSystemModel::size(const QModelIndex& index) const
+{
+    if (!index.isValid())
+        return QString();
+    static const QFileSystemModel* model = static_cast<const QFileSystemModel*>(index.model());
+
+    if (model->isDir(index))
+        return DirectorySizePlaceholder;
+
+    return QFileSystemModel::data(index).toString();
+}
+QVariant FileSystemModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    if (role == Qt::DisplayRole and Headers.contains(section))
+        return Headers[section];
+
+    return QFileSystemModel::headerData(section, orientation, role);
 }

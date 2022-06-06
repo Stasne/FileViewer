@@ -4,15 +4,22 @@
 #include <QFileSystemModel>
 #include <QObject>
 
-class FileSystemModel : public QFileSystemModel
-{
+class FileSystemModel : public QFileSystemModel {
     Q_OBJECT
 public:
+    enum Column {
+        NAME = 0,
+        SIZE,
+        TYPE,
+    };
     explicit FileSystemModel(QObject* parent = nullptr);
 
-public:
-    int      columnCount(const QModelIndex& parent) const;
+    int columnCount(const QModelIndex& parent) const;
     QVariant data(const QModelIndex& index, int role) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+
+private:
+    QString size(const QModelIndex& index) const;
 };
 
 #endif // FILESYSTEMMODEL_H

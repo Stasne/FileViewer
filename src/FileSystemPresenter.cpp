@@ -56,7 +56,7 @@ void FileSystemPresenter::deleteSelectedFiles()
 
     for (const auto& index : indexesToDelete) {
         auto file = model_->filePath(index);
-        if (not model_->remove(index)) // if can't delete
+        if (not model_->remove(index))
             if (deleteErrorPrompt(index) != QMessageBox::Ignore)
                 return;
     }

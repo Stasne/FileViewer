@@ -19,7 +19,7 @@ public:
     ~MainWindow();
 
 private:
-    Ui::MainWindow* ui;
-    QScopedPointer<FileSystemPresenter> presenter_;
+    QSharedPointer<Ui::MainWindow> ui_;
+    QScopedPointer<FileSystemPresenter> filePresenter_;
 };
 #endif // MAINWINDOW_H

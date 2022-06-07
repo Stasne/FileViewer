@@ -1,27 +1,35 @@
 #include "FileSystemPresenter.h"
+#include "./ui_MainWindow.h"
 #include "FileSystemModel.h"
 #include "IDisplaySettings.h"
 #include "IniLetterDelegate.h"
+#include "NameFilterProxy.h"
 #include <QDebug>
 #include <QHeaderView>
 #include <QKeyEvent>
 #include <QMessageBox>
 #include <QTreeView>
-FileSystemPresenter::FileSystemPresenter(QSharedPointer<FileSystemModel> m, QTreeView* tree)
-    : model_(m)
-    , tree_(tree)
+FileSystemPresenter::FileSystemPresenter(QSharedPointer<FileSystemModel> m, QSharedPointer<Ui::MainWindow> ui)
+    : ui_(ui)
+    , model_(m)
+    , tree_(ui->twMain)
 {
     Q_ASSERT(model_);
     Q_ASSERT(tree_);
 
     model_->setFilter(QDir::NoDotAndDotDot | QDir::AllDirs | QDir::AllEntries);
     model_->setRootPath("");
+
     tree_->setModel(model_.get());
+    //    auto filter = new QSortFilterProxyModel();
+    //    filter->setSourceModel(model_.get());
+    //    tree_->setModel(filter);
+
     auto settings = QSharedPointer<IDisplaySettings>::create();
     auto initiaLetterDelegate = new IniLetterDelegate(settings);
     tree_->setItemDelegateForColumn(FileSystemModel::Column::NAME, initiaLetterDelegate);
     tree_->header()->setSectionResizeMode(FileSystemModel::Column::NAME, QHeaderView::ResizeMode::Stretch);
-    tree->installEventFilter(this);
+    tree_->installEventFilter(this);
 }
 
 void FileSystemPresenter::deleteSelectedFiles()
@@ -55,7 +63,6 @@ void FileSystemPresenter::deleteSelectedFiles()
         return;
 
     for (const auto& index : indexesToDelete) {
-        auto file = model_->filePath(index);
         if (not model_->remove(index))
             if (deleteErrorPrompt(index) != QMessageBox::Ignore)
                 return;

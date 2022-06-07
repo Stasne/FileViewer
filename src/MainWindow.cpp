@@ -5,14 +5,13 @@
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    , ui_(new Ui::MainWindow)
 {
-    ui->setupUi(this);
-    auto model = QSharedPointer<FileSystemModel>(new FileSystemModel());
-    presenter_.reset(new FileSystemPresenter(model, ui->twMain));
+    ui_->setupUi(this);
+    auto fileModel = QSharedPointer<FileSystemModel>::create();
+    filePresenter_.reset(new FileSystemPresenter(fileModel, ui_));
 }
 
 MainWindow::~MainWindow()
 {
-    delete ui;
 }

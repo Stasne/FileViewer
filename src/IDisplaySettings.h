@@ -15,11 +15,11 @@ public:
         f.setItalic(not isDir);
         return f;
     }
-    virtual QColor fontColorDefault() const { return Qt::white; }
-    virtual QColor iconBgColor(bool isDir) const
+    virtual QColor iconFontColor() const { return Qt::white; }
+    virtual const QColor& iconBgColor(bool isDir) const
     {
-        static QColor fileBgColor(30, 180, 50);
-        static QColor dirBgColor(50, 50, 180);
+        static const QColor fileBgColor(30, 180, 50);
+        static const QColor dirBgColor(50, 50, 180);
         return isDir ? dirBgColor : fileBgColor;
     }
 };

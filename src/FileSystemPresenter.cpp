@@ -38,7 +38,7 @@ void FileSystemPresenter::deleteSelectedFiles()
         msgBox.setDefaultButton(QMessageBox::Yes);
         return msgBox.exec();
     };
-    auto deleteErrorPrompt = [](const QModelIndex index) {
+    auto deleteErrorPrompt = [](const QModelIndex& index) {
         QMessageBox msgBox;
         msgBox.setText(tr("Error"));
         msgBox.setInformativeText(tr("Can't delete file %1").arg(index.data().toString()));
@@ -47,25 +47,18 @@ void FileSystemPresenter::deleteSelectedFiles()
         return msgBox.exec();
     };
 
-    auto indexesToDelete = tree_->selectionModel()->selectedRows();
+    const auto indexesToDelete = tree_->selectionModel()->selectedRows();
     if (not indexesToDelete.size())
         return;
 
     if (deletePrompt(indexesToDelete) != QMessageBox::Yes)
         return;
 
-    for (const auto& index : qAsConst(indexesToDelete)) {
+    for (const auto& index : indexesToDelete) {
         auto file = model_->filePath(index);
-        if (not model_->remove(index))
-            switch (deleteErrorPrompt(index)) {
-            case QMessageBox::Ignore:
-                continue;
-            case QMessageBox::Cancel:
-            default:
+        if (not model_->remove(index)) // if can't delete
+            if (deleteErrorPrompt(index) != QMessageBox::Ignore)
                 return;
-            }
-
-        qDebug() << "Deleting file: " << file;
     }
     tree_->selectionModel()->clearSelection();
 }

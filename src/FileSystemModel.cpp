@@ -1,14 +1,13 @@
 #include "FileSystemModel.h"
 
-#include <QFont>
 namespace {
 
-const static QMap<int, QString> Headers {
+const QMap<int, QString> Headers {
     { FileSystemModel::Column::NAME, QObject::tr("Name") },
     { FileSystemModel::Column::SIZE, QObject::tr("Size") },
     { FileSystemModel::Column::TYPE, QObject::tr("Type") }
 };
-const static QString DirectorySizePlaceholder { QObject::tr("<DIR>") };
+const QString DirectorySizePlaceholder { QObject::tr("<DIR>") };
 
 }
 FileSystemModel::FileSystemModel(QObject* parent)
@@ -26,6 +25,8 @@ QVariant FileSystemModel::data(const QModelIndex& index, int role) const
 {
     if (role == Qt::DisplayRole and index.column() == SIZE)
         return size(index);
+    if (role == isDirRole)
+        return isDir(index);
     return QFileSystemModel::data(index, role);
 }
 

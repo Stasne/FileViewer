@@ -3,7 +3,7 @@
 #include <QColor>
 #include <QFont>
 #include <QSize>
-
+// Не стал заводить отдельный класс-реализацию Settings
 class IDisplaySettings {
 public:
     IDisplaySettings() = default;

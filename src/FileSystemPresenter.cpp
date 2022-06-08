@@ -3,36 +3,44 @@
 #include "FileSystemModel.h"
 #include "IDisplaySettings.h"
 #include "IniLetterDelegate.h"
-#include "NameFilterProxy.h"
-#include <QDebug>
 #include <QHeaderView>
 #include <QKeyEvent>
+#include <QLineEdit>
 #include <QMessageBox>
+#include <QSortFilterProxyModel>
 #include <QTreeView>
-FileSystemPresenter::FileSystemPresenter(QSharedPointer<FileSystemModel> m, QSharedPointer<Ui::MainWindow> ui)
+
+FileSystemPresenter::FileSystemPresenter(const QSharedPointer<FileSystemModel> m, const QSharedPointer<Ui::MainWindow> ui, const QSharedPointer<IDisplaySettings> settings)
     : ui_(ui)
     , model_(m)
-    , tree_(ui->twMain)
+    , nameFilter_(new QSortFilterProxyModel())
 {
     Q_ASSERT(model_);
-    Q_ASSERT(tree_);
+    Q_ASSERT(ui);
+    Q_ASSERT(settings);
 
     model_->setFilter(QDir::NoDotAndDotDot | QDir::AllDirs | QDir::AllEntries);
     model_->setRootPath("");
 
-    tree_->setModel(model_.get());
-    //    auto filter = new QSortFilterProxyModel();
-    //    filter->setSourceModel(model_.get());
-    //    tree_->setModel(filter);
+    nameFilter_->setSourceModel(model_.get());
+    nameFilter_->setRecursiveFilteringEnabled(true);
+    // самым примитивным способом фильтруем
+    connect(ui_->leFilter, &QLineEdit::textChanged, [this](const QString& expr) {
+        QRegExp regExp(expr, Qt::CaseInsensitive, QRegExp::FixedString);
+        nameFilter_->setFilterRegExp(regExp);
+    });
 
-    auto settings = QSharedPointer<IDisplaySettings>::create();
-    auto initiaLetterDelegate = new IniLetterDelegate(settings);
-    tree_->setItemDelegateForColumn(FileSystemModel::Column::NAME, initiaLetterDelegate);
+    tree_ = ui_->twMain;
+    tree_->setModel(nameFilter_.get());
+    tree_->setItemDelegateForColumn(FileSystemModel::Column::NAME, new IniLetterDelegate(FileSystemModel::Roles::isDirRole, settings, tree_));
     tree_->header()->setSectionResizeMode(FileSystemModel::Column::NAME, QHeaderView::ResizeMode::Stretch);
     tree_->installEventFilter(this);
+
+    QWidget::setTabOrder(tree_, ui_->leFilter);
+    QWidget::setTabOrder(ui_->leFilter, tree_);
 }
 
-void FileSystemPresenter::deleteSelectedFiles()
+void FileSystemPresenter::deleteSelectedFiles() const
 {
     auto deletePrompt = [](const QList<QModelIndex>& indexes) {
         QMessageBox msgBox;
@@ -62,7 +70,8 @@ void FileSystemPresenter::deleteSelectedFiles()
     if (deletePrompt(indexesToDelete) != QMessageBox::Yes)
         return;
 
-    for (const auto& index : indexesToDelete) {
+    for (const auto& indexProxy : indexesToDelete) {
+        auto index = nameFilter_->mapToSource(indexProxy);
         if (not model_->remove(index))
             if (deleteErrorPrompt(index) != QMessageBox::Ignore)
                 return;

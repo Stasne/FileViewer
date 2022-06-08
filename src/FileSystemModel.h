@@ -12,6 +12,9 @@ public:
         SIZE,
         TYPE,
     };
+    enum Roles {
+        isDirRole = FilePermissions + 1,
+    };
     explicit FileSystemModel(QObject* parent = nullptr);
 
     int columnCount(const QModelIndex& parent) const;

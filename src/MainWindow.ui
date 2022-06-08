@@ -32,8 +32,19 @@
     </property>
     <item row="0" column="0">
      <widget class="QLineEdit" name="leFilter">
+      <property name="minimumSize">
+       <size>
+        <width>25</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
       <property name="focusPolicy">
-       <enum>Qt::TabFocus</enum>
+       <enum>Qt::StrongFocus</enum>
       </property>
       <property name="placeholderText">
        <string>Filename filter...</string>
